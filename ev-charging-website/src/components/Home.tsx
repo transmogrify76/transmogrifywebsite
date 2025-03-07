@@ -13,7 +13,7 @@ const Home = () => {
           muted
           className="absolute inset-0 w-full h-full object-cover opacity-70"
         >
-          <source src="\src\assets\videos\35266-407130741_medium.mp4" type="video/mp4" />
+          <source src="\src\assets\videos\video3.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
