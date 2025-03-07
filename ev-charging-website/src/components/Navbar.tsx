@@ -14,16 +14,16 @@ const Navbar = () => {
           <img
             src={logo}
             alt="EV Charge Co. Logo"
-            className="h-20 object-contain" // Increased height to h-20 and added object-contain
+            className="h-18 w-30 object-contain" 
           />
         </Link>
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? (
-            <FaTimes className="text-gray-900 w-6 h-6" /> // Added explicit size for icons
+            <FaTimes className="text-gray-900 w-6 h-6" /> 
           ) : (
-            <FaBars className="text-gray-900 w-6 h-6" /> // Added explicit size for icons
+            <FaBars className="text-gray-900 w-6 h-6" /> 
           )}
         </div>
 
