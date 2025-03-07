@@ -24,7 +24,7 @@ const Home = () => {
           transition={{ duration: 1 }}
           className="text-center z-10"
         >
-          <h1 className="text-6xl font-bold mb-4" style={{ color: '#8EB03E' }}>Powering the Future</h1>
+          <h1 className="text-8xl font-bold mb-4" style={{ color: '#FFFF' }}>Powering the Future</h1>
           <p className="text-xl mb-8">Revolutionizing EV Charging Solutions</p>
           <motion.button
             whileHover={{ scale: 1.1 }}

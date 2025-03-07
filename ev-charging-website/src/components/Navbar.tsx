@@ -12,10 +12,10 @@ const Navbar = () => {
           {isOpen ? <FaTimes className="text-white" /> : <FaBars className="text-white" />}
         </div>
         <ul className={`md:flex ${isOpen ? 'block' : 'hidden'} space-x-6 text-white`}>
-          <li><a href="#home" className="hover:text-blue-400">Home</a></li>
-          <li><a href="#services" className="hover:text-blue-400">Services</a></li>
-          <li><a href="#about" className="hover:text-blue-400">About</a></li>
-          <li><a href="#contact" className="hover:text-blue-400">Contact</a></li>
+          <li><a href="/" className="hover:text-blue-400">Home</a></li>
+          <li><a href="/services" className="hover:text-blue-400">Services</a></li>
+          <li><a href="/about" className="hover:text-blue-400">About</a></li>
+          <li><a href="/contact" className="hover:text-blue-400">Contact</a></li>
         </ul>
       </div>
     </nav>
