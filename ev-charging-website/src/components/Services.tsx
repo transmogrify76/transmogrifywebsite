@@ -9,9 +9,9 @@ const Services = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-100">
+    <section className="py-40 bg-gray-100">
       <div className="container mx-auto text-center">
-        <h2 className="text-4xl font-bold mb-8">Our Services</h2>
+        <h2 className="text-4xl font-bold mb-8 '#8EB03E' ">Our Services </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <motion.div
@@ -20,10 +20,11 @@ const Services = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
               whileHover={{ scale: 1.05, boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)' }}
-              className="p-6 bg-white rounded-lg shadow-lg cursor-pointer"
+              style={{ color: '#8EB03E' }}
+              className="p-8 bg-white rounded-lg shadow-lg cursor-pointer"
             >
               {service.icon}
-              <h3 className="text-2xl font-semibold mb-2">{service.title}</h3>
+              <h3 className="text-2xl font-semibold mb-10">{service.title}</h3>
               <p>{service.description}</p>
             </motion.div>
           ))}

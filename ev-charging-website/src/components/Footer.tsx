@@ -14,11 +14,11 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold mb-4" style={{ color: '#8EB03E' }}>Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">Services</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">Products</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">Contact</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-[#FFA500] transition-all">Home</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#FFA500] transition-all">Services</a></li>
+              <li><a href="/products" className="text-gray-400 hover:text-[#FFA500] transition-all">Products</a></li>
+              <li><a href="/about" className="text-gray-400 hover:text-[#FFA500] transition-all">About Us</a></li>
+              <li><a href="/contact" className="text-gray-400 hover:text-[#FFA500] transition-all">Contact</a></li>
             </ul>
           </div>
           <div className="text-center md:text-left">
