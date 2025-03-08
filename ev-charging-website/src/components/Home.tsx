@@ -4,20 +4,18 @@ import { FaChargingStation, FaLeaf, FaPlug, FaStar, FaQuoteLeft, FaBolt } from '
 const Home = () => {
   return (
     <div className="bg-gray-50 text-gray-900">
-      {/* Hero Section */}
-      <section className="h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Video Background */}
+      <section className="h-screen flex items-center justify-center relative overflow-hidden">       
         <video
           autoPlay
           loop
           muted
           className="absolute inset-0 w-full h-full object-cover opacity-70"
         >
-          <source src="\src\assets\videos\video3.mp4" type="video/mp4" />
+          <source src="\src\assets\videos\video4.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
-        {/* Hero Content */}
+       
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -50,7 +48,7 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Services Section */}
+      
       <section className="py-16 bg-white">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -85,7 +83,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Products Section */}
+     
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -120,7 +118,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      
       <section className="py-16 bg-white">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -159,7 +157,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Call-to-Action Section */}
+      
       <section className="py-16 bg-gradient-to-r from-[#8EB03E] to-[#6A8F2E]">
         <div className="container mx-auto text-center">
           <motion.h2

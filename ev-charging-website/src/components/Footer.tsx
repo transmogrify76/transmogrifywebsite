@@ -5,15 +5,12 @@ const Footer = () => {
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
           <div className="text-center md:text-left">
             <h3 className="text-2xl font-bold mb-4" style={{ color: '#8EB03E' }}>EV Charge Co.</h3>
             <p className="text-gray-400">
               Revolutionizing EV charging solutions for a sustainable future.
             </p>
           </div>
-
-          {/* Quick Links */}
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold mb-4" style={{ color: '#8EB03E' }}>Quick Links</h4>
             <ul className="space-y-2">
@@ -24,8 +21,6 @@ const Footer = () => {
               <li><a href="#" className="text-gray-400 hover:text-[#FFA500] transition-all">Contact</a></li>
             </ul>
           </div>
-
-          {/* Newsletter */}
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold mb-4" style={{ color: '#8EB03E' }}>Newsletter</h4>
             <p className="text-gray-400 mb-4">
@@ -45,8 +40,6 @@ const Footer = () => {
               </button>
             </form>
           </div>
-
-          {/* Social Media */}
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold mb-4" style={{ color: '#8EB03E' }}>Follow Us</h4>
             <div className="flex space-x-4 justify-center md:justify-start">
@@ -65,8 +58,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-
-        {/* Copyright */}
         <div className="mt-8 pt-8 border-t border-gray-800 text-center">
           <p className="text-gray-400">
             &copy; 2023 EV Charge Co. All rights reserved.

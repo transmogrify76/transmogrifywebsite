@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import logo from '../assets/images/transmogrify logo.jpg'; // Ensure the path is correct
+import logo from '../assets/images/transmogrify logo.jpg';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,7 +9,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white p-4 fixed w-full z-50 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        {/* Logo */}
+      
         <Link to="/">
           <img
             src={logo}
@@ -17,8 +17,6 @@ const Navbar = () => {
             className="h-18 w-30 object-contain" 
           />
         </Link>
-
-        {/* Mobile Menu Toggle */}
         <div className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? (
             <FaTimes className="text-gray-900 w-6 h-6" /> 
@@ -26,8 +24,6 @@ const Navbar = () => {
             <FaBars className="text-gray-900 w-6 h-6" /> 
           )}
         </div>
-
-        {/* Navigation Links */}
         <ul
           className={`md:flex ${isOpen ? 'block' : 'hidden'} space-x-6 text-gray-900`}
         >

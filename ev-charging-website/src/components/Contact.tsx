@@ -14,7 +14,6 @@ const Contact = () => {
           Contact Us
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Contact Form */}
           <motion.form
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
