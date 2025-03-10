@@ -1,9 +1,32 @@
 import { motion } from 'framer-motion';
-import { FaChargingStation, FaLeaf, FaPlug, FaStar, FaQuoteLeft, FaBolt } from 'react-icons/fa';
+import { 
+  FaChargingStation, 
+  FaLeaf, 
+  FaPlug, 
+  FaStar, 
+  FaQuoteLeft, 
+  FaBolt,
+  FaHandsHelping,
+  FaLightbulb,
+  FaHeadset,
+ 
+} from 'react-icons/fa';
 
 const Home = () => {
   return (
     <div className="bg-gray-50 text-gray-900">
+      {/* Cookie Consent Banner */}
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 2 }}
+        className="fixed bottom-0 left-0 right-0 bg-[#8EB03E] text-white p-4 flex justify-between items-center z-50"
+      >
+        {/* <p>This website uses cookies. 🍪</p> */}
+       
+      </motion.div>
+
+      {/* Hero Section */}
       <section className="h-screen flex items-center justify-center relative overflow-hidden">       
         <video
           autoPlay
@@ -11,11 +34,10 @@ const Home = () => {
           muted
           className="absolute inset-0 w-full h-full object-cover opacity-70"
         >
-          <source src="\src\assets\videos\video4.mp4" type="video/mp4" />
+          <source src="/src/assets/videos/video4.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
-       
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -48,7 +70,100 @@ const Home = () => {
         </motion.div>
       </section>
 
-      
+      {/* How We Can Help Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: -50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+            className="text-4xl font-bold mb-8"
+            style={{ color: '#8EB03E' }}
+          >
+            How We Can Help
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+            {[
+              { 
+                icon: <FaLightbulb className="w-12 h-12 mb-4" style={{ color: '#8EB03E' }} />,
+                title: "Expertise",
+                description: "Industry-leading knowledge in EV infrastructure development",
+                bg: "bg-gray-50"
+              },
+              { 
+                icon: <FaHandsHelping className="w-12 h-12 mb-4" style={{ color: '#8EB03E' }} />,
+                title: "Guidance",
+                description: "End-to-end support from planning to implementation",
+                bg: "bg-gradient-to-br from-[#8EB03E] to-[#6A8F2E] text-white"
+              },
+              { 
+                icon: <FaHeadset className="w-12 h-12 mb-4" style={{ color: '#8EB03E' }} />,
+                title: "Support",
+                description: "24/7 technical support and maintenance services",
+                bg: "bg-gray-50"
+              },
+            ].map((service, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                whileHover={{ y: -10 }}
+                className={`p-8 rounded-2xl shadow-xl transition-all ${service.bg} hover:shadow-2xl`}
+              >
+                <div className="flex justify-center">{service.icon}</div>
+                <h3 className="text-2xl font-semibold mb-2">{service.title}</h3>
+                <p className="text-gray-700">{service.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Charger Display Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: -50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+            className="text-4xl font-bold mb-8 text-center"
+            style={{ color: '#8EB03E' }}
+          >
+            Our Charger Portfolio
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+            {[1, 2, 3, 4].map((item) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl"
+              >
+                <motion.img
+                  src={`/charger-${item}.jpg`}
+                  alt={`Charger ${item}`}
+                  className="w-full h-48 object-cover"
+                  whileHover={{ scale: 1.1 }}
+                />
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-2">Charger Model {item}</h3>
+                  <div className="flex items-center mb-4">
+                    <FaBolt className="text-[#FFA500] mr-2" />
+                    <span className="text-gray-600">150kW Fast Charging</span>
+                  </div>
+                  <button className="bg-[#8EB03E] text-white px-4 py-2 rounded-full hover:bg-[#7a9b34]">
+                    View Details
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -83,7 +198,7 @@ const Home = () => {
         </div>
       </section>
 
-     
+      {/* Products Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -118,7 +233,7 @@ const Home = () => {
         </div>
       </section>
 
-      
+      {/* Testimonials Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto text-center">
           <motion.h2
@@ -157,7 +272,7 @@ const Home = () => {
         </div>
       </section>
 
-      
+      {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-[#8EB03E] to-[#6A8F2E]">
         <div className="container mx-auto text-center">
           <motion.h2
