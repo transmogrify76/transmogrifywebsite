@@ -11,7 +11,7 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       await login(loginData);
-      navigate('/dashboard'); // Redirect to dashboard after login
+      navigate('/dashboard'); 
     } catch (error) {
       setError((error as { detail?: string }).detail || 'Login failed. Please try again.');
     }

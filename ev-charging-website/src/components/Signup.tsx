@@ -1,28 +1,51 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signup } from '../api';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_KEY = "mlzuMoRFjdGhcFulLMaVtfwNAHycbBAf";
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone_number: "",
   });
-  const [error, setError] = useState<string>('');
+
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    setError(""); 
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required.");
       return;
     }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    const userPayload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone_number: formData.phone_number || undefined,
+    };
+
     try {
-      await signup(formData);
-      navigate('/login');
-    } catch (error) {
-      setError((error as { detail?: string }).detail || 'Signup failed. Please try again.');
+      await axios.post("http://localhost:8000/users/signup", userPayload, {
+        headers: {
+          "API-KEY": API_KEY,
+        },
+      });
+
+      navigate("/login");
+    } catch (error: any) {
+      setError(error.response?.data?.detail || "Signup failed. Please try again.");
     }
   };
 
@@ -60,6 +83,13 @@ const Signup: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8EB03E] outline-none"
           />
+          <input
+            type="text"
+            placeholder="Phone Number (Optional)"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8EB03E] outline-none"
+          />
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-[#8EB03E] to-[#6A8F2E] text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all"
@@ -68,7 +98,7 @@ const Signup: React.FC = () => {
           </button>
         </div>
         <p className="mt-6 text-center text-gray-600">
-          Already have an account?{' '}
+          Already have an account? {" "}
           <a href="/login" className="text-[#8EB03E] hover:underline">
             Log In
           </a>

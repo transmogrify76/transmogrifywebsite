@@ -17,19 +17,18 @@ interface LoginData {
 }
 
 interface UserUpdate {
-  name?: string;
-  email?: string;
-  password?: string;
+  name: string;
+  email: string;
+  phone_number?: number | null; // Add phone_number as an optional field
 }
+
 
 interface TwoFARequest {
   email: string;
   otp_code: string;
 }
 
-interface PasswordResetRequest {
-  email: string;
-}
+
 
 interface PasswordResetConfirm {
   email: string;
@@ -46,12 +45,6 @@ interface AddressCreate {
   custom_name?: string;
 }
 
-interface AddressUpdate {
-  street?: string;
-  city?: string;
-  state?: string;
-  zip_code?: string;
-}
 
 // Helper function to set headers with JWT token and API key
 const getAuthHeaders = () => {
@@ -94,7 +87,7 @@ export const login = async (loginData: LoginData): Promise<AxiosResponse> => {
 
 export const logout = async (): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/logout`, {}, getAuthHeaders());
+    const response = await axios.post(`${API_BASE_URL}/users/logout`, {}, getAuthHeaders());
     localStorage.removeItem('token'); // Remove JWT token
     return response.data;
   } catch (error) {
@@ -114,7 +107,7 @@ export const getUserProfile = async (): Promise<AxiosResponse> => {
 
 export const updateUserProfile = async (updateData: UserUpdate): Promise<AxiosResponse> => {
   try {
-    const response = await axios.patch(`${API_BASE_URL}/update`, updateData, getAuthHeaders());
+    const response = await axios.patch(`${API_BASE_URL}/users/update`, updateData, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -123,7 +116,7 @@ export const updateUserProfile = async (updateData: UserUpdate): Promise<AxiosRe
 
 export const deleteUser = async (): Promise<AxiosResponse> => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/delete`, getAuthHeaders());
+    const response = await axios.delete(`${API_BASE_URL}/users/delete`, getAuthHeaders());
     localStorage.removeItem('token'); // Remove JWT token
     return response.data;
   } catch (error) {
@@ -134,7 +127,7 @@ export const deleteUser = async (): Promise<AxiosResponse> => {
 // 2FA APIs
 export const get2FAStatus = async (): Promise<AxiosResponse> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/2fa/status`, getAuthHeaders());
+    const response = await axios.get(`${API_BASE_URL}/users/2fa/status`, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -143,7 +136,7 @@ export const get2FAStatus = async (): Promise<AxiosResponse> => {
 
 export const toggle2FAStatus = async (requestData: { entered_password: string }): Promise<AxiosResponse> => {
   try {
-    const response = await axios.patch(`${API_BASE_URL}/2fa/toggle`, requestData, getAuthHeaders());
+    const response = await axios.patch(`${API_BASE_URL}/users/2fa/toggle`, requestData, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -152,7 +145,7 @@ export const toggle2FAStatus = async (requestData: { entered_password: string })
 
 export const verify2FA = async (twoFAData: TwoFARequest): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/2fa/verify`, twoFAData, {
+    const response = await axios.post(`${API_BASE_URL}/users/2fa/verify`, twoFAData, {
       headers: {
         'API-Key': API_KEY, // Include the API key for non-authenticated requests
       },
@@ -167,7 +160,7 @@ export const verify2FA = async (twoFAData: TwoFARequest): Promise<AxiosResponse>
 // Password Reset APIs
 export const requestPasswordReset = async (email: string): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/password-reset/request`, { email }, {
+    const response = await axios.post(`${API_BASE_URL}/users/password-reset/request`, { email }, {
       headers: {
         'API-Key': API_KEY, // Include the API key for non-authenticated requests
       },
@@ -180,7 +173,7 @@ export const requestPasswordReset = async (email: string): Promise<AxiosResponse
 
 export const resetPassword = async (resetData: PasswordResetConfirm): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/password-reset/confirm`, resetData, {
+    const response = await axios.post(`${API_BASE_URL}/users/password-reset/confirm`, resetData, {
       headers: {
         'API-Key': API_KEY, // Include the API key for non-authenticated requests
       },
@@ -194,7 +187,7 @@ export const resetPassword = async (resetData: PasswordResetConfirm): Promise<Ax
 // Address APIs
 export const createAddress = async (addressData: AddressCreate): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/address`, addressData, getAuthHeaders());
+    const response = await axios.post(`${API_BASE_URL}/users/address`, addressData, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -203,7 +196,7 @@ export const createAddress = async (addressData: AddressCreate): Promise<AxiosRe
 
 export const getAddresses = async (): Promise<AxiosResponse> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/address`, getAuthHeaders());
+    const response = await axios.get(`${API_BASE_URL}/users/address`, getAuthHeaders());
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -212,7 +205,7 @@ export const getAddresses = async (): Promise<AxiosResponse> => {
 
 export const deleteAddress = async (addressType: string, customName?: string): Promise<AxiosResponse> => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/address/${addressType}`, {
+    const response = await axios.delete(`${API_BASE_URL}/users/address/${addressType}`, {
       ...getAuthHeaders(),
       params: { custom_name: customName },
     });
