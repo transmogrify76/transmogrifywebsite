@@ -75,7 +75,6 @@ const Dashboard: React.FC = () => {
     const loadUserProfile = async () => {
       try {
         const profile = await getUserProfile();
-        console.log('Profile response:', profile);
         const user = profile.data?.user_data || profile.user_data || profile.data;
         if (user) {
           setUserData({
@@ -97,7 +96,6 @@ const Dashboard: React.FC = () => {
   const fetchAddresses = async () => {
     try {
       const addressesResponse = await getAddresses();
-      console.log('Addresses response:', addressesResponse);
       setAddresses(addressesResponse.data || addressesResponse);
     } catch (error: any) {
       console.error('Error loading addresses:', error);
@@ -139,7 +137,6 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
     try {
       const response = await createAddress(addressForm);
-      // Update local addresses state (alternatively, you could call fetchAddresses() here)
       setAddresses([...addresses, response.data]);
       setShowAddressModal(false);
       toast.success('Address added successfully');
@@ -151,7 +148,6 @@ const Dashboard: React.FC = () => {
   const handleDeleteAddress = async (addressId: string) => {
     try {
       await deleteAddress(addressId);
-      // Update the local addresses state by filtering out the deleted address.
       setAddresses(addresses.filter(addr => addr.id !== addressId));
       toast.success('Address deleted successfully');
     } catch (error: any) {
@@ -176,58 +172,65 @@ const Dashboard: React.FC = () => {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p>Loading user data...</p>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading user data...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-40 sm:p-60">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 sm:p-60">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 font-serif">
+            Welcome Back, {userData?.name.split(' ')[0]}!
+          </h1>
           <button
             onClick={logout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors w-full sm:w-auto"
+            className="bg-gradient-to-br from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-pink-100"
           >
             Logout
           </button>
         </div>
 
         <Tabs selectedIndex={activeTab} onSelect={(index: number) => setActiveTab(index)}>
-          <TabList className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-8 border-b border-gray-200">
-            <Tab className="px-4 py-2 cursor-pointer text-gray-600 hover:text-blue-600 
-              aria-selected:border-b-2 aria-selected:border-blue-600 aria-selected:text-blue-600 text-center">
-              Profile
+          <TabList className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-8">
+            <Tab className="px-6 py-3 cursor-pointer text-gray-600 hover:text-indigo-600 
+              aria-selected:bg-white aria-selected:shadow-xl aria-selected:text-indigo-600 
+              rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+              <span className="mr-2">👤</span> Profile
             </Tab>
-            <Tab className="px-4 py-2 cursor-pointer text-gray-600 hover:text-blue-600 
-              aria-selected:border-b-2 aria-selected:border-blue-600 aria-selected:text-blue-600 text-center">
-              Security
+            <Tab className="px-6 py-3 cursor-pointer text-gray-600 hover:text-indigo-600 
+              aria-selected:bg-white aria-selected:shadow-xl aria-selected:text-indigo-600 
+              rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+              <span className="mr-2">🔒</span> Security
             </Tab>
-            <Tab className="px-4 py-2 cursor-pointer text-gray-600 hover:text-blue-600 
-              aria-selected:border-b-2 aria-selected:border-blue-600 aria-selected:text-blue-600 text-center">
-              Addresses ({addresses.length})
+            <Tab className="px-6 py-3 cursor-pointer text-gray-600 hover:text-indigo-600 
+              aria-selected:bg-white aria-selected:shadow-xl aria-selected:text-indigo-600 
+              rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+              <span className="mr-2">🏠</span> Addresses ({addresses.length})
             </Tab>
           </TabList>
 
+          {/* Profile Tab */}
           <TabPanel>
-            {/* Profile Tab */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start gap-8 mb-6">
                 <div className="relative shrink-0">
-                  <img 
-                    src={userData?.profile_picture || '/default-avatar.png'} 
-                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-blue-100"
-                    alt="Profile"
-                  />
-                  {!userData?.profile_picture && (
-                    <div className="absolute inset-0 bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-xl sm:text-2xl font-bold text-gray-400">
-                        {userData?.name[0]?.toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-indigo-100 p-1">
+                    <img 
+                      src={userData?.profile_picture || '/default-avatar.png'} 
+                      className="w-full h-full rounded-full object-cover"
+                      alt="Profile"
+                    />
+                    {!userData?.profile_picture && (
+                      <div className="absolute inset-0 bg-indigo-50 rounded-full flex items-center justify-center">
+                        <span className="text-3xl font-bold text-indigo-300">
+                          {userData?.name[0]?.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {editMode ? (
@@ -238,7 +241,7 @@ const Dashboard: React.FC = () => {
                         <input
                           value={formData.name}
                           onChange={e => setFormData({ ...formData, name: e.target.value })}
-                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                         />
                       </div>
                       <div>
@@ -246,7 +249,7 @@ const Dashboard: React.FC = () => {
                         <input
                           value={formData.email}
                           onChange={e => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                         />
                       </div>
                       <div>
@@ -255,21 +258,21 @@ const Dashboard: React.FC = () => {
                           type="tel"
                           value={formData.phone_number}
                           onChange={e => setFormData({ ...formData, phone_number: e.target.value })}
-                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                         />
                       </div>
                     </div>
                     <div className="mt-6 flex flex-col sm:flex-row gap-2">
                       <button
                         type="submit"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                        className="bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-indigo-100"
                       >
                         Save Changes
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditMode(false)}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl transition-all"
                       >
                         Cancel
                       </button>
@@ -277,10 +280,10 @@ const Dashboard: React.FC = () => {
                   </form>
                 ) : (
                   <div className="flex-1 w-full">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4">{userData?.name}</h2>
-                    <div className="space-y-3">
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">{userData?.name}</h2>
+                    <div className="space-y-4">
                       <div className="flex items-center">
-                        <span className="font-semibold w-28">Email:</span>
+                        <span className="font-semibold w-28 text-indigo-600">Email:</span>
                         <span className="flex-1">{userData?.email}</span>
                         {userData?.email_verified ? (
                           <span className="bg-green-100 text-green-700 text-sm px-2 py-1 rounded-full ml-2">
@@ -293,19 +296,19 @@ const Dashboard: React.FC = () => {
                         )}
                       </div>
                       <div className="flex items-center">
-                        <span className="font-semibold w-28">Phone:</span>
+                        <span className="font-semibold w-28 text-indigo-600">Phone:</span>
                         <span className="flex-1">
                           {userData?.phone_number ? `+${userData.phone_number}` : 'Not provided'}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="font-semibold w-28">Member Since:</span>
+                        <span className="font-semibold w-28 text-indigo-600">Member Since:</span>
                         <span className="flex-1">
                           {userData?.created_at ? formatDate(userData.created_at) : 'N/A'}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="font-semibold w-28">Last Updated:</span>
+                        <span className="font-semibold w-28 text-indigo-600">Last Updated:</span>
                         <span className="flex-1">
                           {userData?.updated_at ? formatDate(userData.updated_at) : 'N/A'}
                         </span>
@@ -322,7 +325,7 @@ const Dashboard: React.FC = () => {
                         });
                         setEditMode(true);
                       }}
-                      className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                      className="mt-6 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-indigo-100"
                     >
                       Edit Profile
                     </button>
@@ -332,83 +335,80 @@ const Dashboard: React.FC = () => {
             </div>
           </TabPanel>
 
+          {/* Security Tab */}
           <TabPanel>
-            {/* Security Tab */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <h3 className="font-medium text-lg mb-1">Two-Factor Authentication</h3>
-                      <p className="text-sm text-gray-600">
-                        {userData?.two_fa_status 
-                          ? 'Extra security layer is currently active'
-                          : 'Add an extra layer of security to your account'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShow2FAModal(true)}
-                      className={`px-4 py-2 rounded-lg text-sm ${
-                        userData?.two_fa_status 
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                          : 'bg-green-100 text-green-700 hover:bg-green-200'
-                      }`}
-                    >
-                      {userData?.two_fa_status ? 'Disable 2FA' : 'Enable 2FA'}
-                    </button>
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-6">
+              <div className="p-6 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2 text-indigo-800">Two-Factor Authentication</h3>
+                    <p className="text-sm text-indigo-600">
+                      {userData?.two_fa_status 
+                        ? '🛡️ Your account has enhanced security'
+                        : '🔓 Add an extra layer of protection'}
+                    </p>
                   </div>
+                  <button
+                    onClick={() => setShow2FAModal(true)}
+                    className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${
+                      userData?.two_fa_status 
+                        ? 'bg-rose-100 text-rose-800 hover:bg-rose-200' 
+                        : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+                    }`}
+                  >
+                    {userData?.two_fa_status ? 'Disable 2FA' : 'Enable 2FA'}
+                  </button>
                 </div>
+              </div>
 
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <h3 className="font-medium text-lg mb-1">Password</h3>
-                      <p className="text-sm text-gray-600">
-                        Last changed: {userData?.updated_at ? formatDate(userData.updated_at) : 'N/A'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowPasswordModal(true)}
-                      className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm"
-                    >
-                      Change Password
-                    </button>
+              <div className="p-6 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2 text-indigo-800">Password</h3>
+                    <p className="text-sm text-indigo-600">
+                      Last changed: {userData?.updated_at ? formatDate(userData.updated_at) : 'N/A'}
+                    </p>
                   </div>
+                  <button
+                    onClick={() => setShowPasswordModal(true)}
+                    className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-6 py-2 rounded-xl text-sm font-medium transition-all"
+                  >
+                    Change Password
+                  </button>
                 </div>
               </div>
             </div>
           </TabPanel>
 
+          {/* Addresses Tab */}
           <TabPanel>
-            {/* Addresses Tab */}
-            <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <h3 className="text-xl font-semibold">Saved Addresses</h3>
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+                <h3 className="text-2xl font-semibold text-gray-800">📍 Saved Addresses</h3>
                 <button
                   onClick={() => setShowAddressModal(true)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
+                  className="bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-indigo-100"
                 >
-                  Add New Address
+                  + Add New Address
                 </button>
               </div>
               
-              {/* Instead of auto-loading addresses, check if addresses exist.
-                  If not, display a button to load addresses manually. */}
               {addresses.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {addresses.map(address => (
-                    <div key={address.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <span className="font-semibold capitalize mr-2">
-                              {address.address_type}
+                    <div key={address.id} className="group bg-white p-6 rounded-xl border border-gray-200 hover:border-indigo-200 hover:shadow-lg transition-all duration-300">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center mb-3">
+                            <span className={`inline-block w-6 h-6 rounded-full mr-2 
+                              ${address.address_type === 'Home' ? 'bg-pink-500' : 
+                                address.address_type === 'Work' ? 'bg-blue-500' : 'bg-purple-500'}`}
+                            />
+                            <span className="font-semibold text-gray-800">
+                              {address.custom_name || address.address_type}
                             </span>
-                            {address.custom_name && (
-                              <span className="text-gray-500 text-sm">({address.custom_name})</span>
-                            )}
                           </div>
-                          <p className="text-gray-600">{address.street}</p>
+                          <p className="text-gray-600 mb-1">{address.street}</p>
                           <p className="text-gray-600">
                             {address.city}, {address.state} {address.zip_code}
                           </p>
