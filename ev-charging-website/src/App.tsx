@@ -10,6 +10,7 @@ import Products from './components/Products';
 import Signup from './components/Signup';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import ProductDetails from './components/ProductDetails';
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products/:productId" element={<ProductDetails />} />
         </Routes>
       </AnimatePresence>
       <Footer />

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { FaSearch, FaSpinner } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 // Define the Product type based on the API response
 interface Product {
@@ -109,7 +110,7 @@ const Products = () => {
   }, [searchQuery, allProducts]);
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-50 bg-gray-50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0 }}
@@ -205,12 +206,12 @@ const Products = () => {
                     >
                       {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
                     </span>
-                    <a
-                      href={`/products/${product.id}`}
+                    <Link
+                      to={`/products/${product.id}`}
                       className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
                     >
                       View Details
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
