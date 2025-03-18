@@ -40,7 +40,6 @@ const API_KEY = 'mlzuMoRFjdGhcFulLMaVtfwNAHycbBAf';
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  // Cache the full product list to avoid re-fetching when search is cleared
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -110,11 +109,17 @@ const Products = () => {
   }, [searchQuery, allProducts]);
 
   return (
-    <section className="py-50 bg-gray-50">
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="py-50 bg-gray-50"
+    >
       <div className="container mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="max-w-2xl mx-auto mb-16"
         >
           <div className="relative">
@@ -146,15 +151,16 @@ const Products = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
           >
-            {products.map((product) => (
+            {products.map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '0px 0px -100px 0px' }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 whileHover={{
                   scale: 1.05,
                   boxShadow: '0 10px 30px rgba(142, 176, 62, 0.2)',
@@ -163,11 +169,13 @@ const Products = () => {
               >
                 <div className="relative h-48 bg-gray-100">
                   {product.image_paths?.length > 0 ? (
-                    <img
+                    <motion.img
                       src={product.image_paths[0]}
                       alt={product.name}
                       className="w-full h-full object-cover"
                       loading="lazy"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.3 }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -219,7 +227,7 @@ const Products = () => {
           </motion.div>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

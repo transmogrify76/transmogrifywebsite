@@ -65,7 +65,7 @@ const Home = () => {
             animate="float"
             className="mb-8"
           >
-            <FaBolt className="text-6xl text-[#8EB03E] mx-auto" />
+            <FaBolt className="text-6xl text-[#faa103] mx-auto" />
           </motion.div>
           
           <motion.button
