@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { FaSearch, FaSpinner } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-// Define the Product type based on the API response
 interface Product {
   id: string;
   name: string;
@@ -35,8 +34,21 @@ interface Product {
   price: number;
 }
 
-// API Key
 const API_KEY = 'mlzuMoRFjdGhcFulLMaVtfwNAHycbBAf';
+
+const getUserIdFromToken = (): string | null => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(window.atob(base64));
+    return payload.user_id;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,8 +56,8 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<{ [key: string]: number }>({});
 
-  // Fetch all products from the API and store them in both products and allProducts state
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -67,43 +79,117 @@ const Products = () => {
     }
   };
 
-  // Search products by query
-  const searchProducts = async (query: string) => {
-    setLoading(true);
+  const handleAddToCart = async (productId: string, price: number) => {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      alert('Please login to add items to cart');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:8000/products/search', {
+      setCartItems(prev => ({ ...prev, [productId]: 1 }));
+      const response = await fetch('http://localhost:8000/cart/addtocart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'API-KEY': API_KEY,
         },
-        body: JSON.stringify({ query, limit: 10 }),
+        body: JSON.stringify({
+          user_id: userId,
+          productid: productId,
+          price: price.toString(),
+        }),
       });
-      if (!response.ok) throw new Error('Search failed');
-      const data: Product[] = await response.json();
-      setProducts(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed');
-    } finally {
-      setLoading(false);
+      
+      if (!response.ok) throw new Error('Failed to add to cart');
+    } catch (error) {
+      setCartItems(prev => {
+        const newState = { ...prev };
+        delete newState[productId];
+        return newState;
+      });
+      alert('Failed to add to cart');
     }
   };
 
-  // Initial fetch on mount
+  const handleQuantityChange = async (productId: string, action: 'increase' | 'decrease') => {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      alert('Please login to modify cart');
+      return;
+    }
+
+    try {
+      setCartItems(prev => {
+        const currentQty = prev[productId] || 0;
+        const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+        
+        if (newQty < 0) return prev;
+        if (newQty === 0) {
+          const newState = { ...prev };
+          delete newState[productId];
+          return newState;
+        }
+        
+        return { ...prev, [productId]: newQty };
+      });
+
+      const endpoint = action === 'increase' 
+        ? 'increasequantity' 
+        : 'decreasemethods';
+
+      const response = await fetch(`http://localhost:8000/cart/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'API-KEY': API_KEY,
+        },
+        body: JSON.stringify({ productid: productId }),
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${action} quantity`);
+    } catch (error) {
+      setCartItems(prev => {
+        const currentQty = prev[productId] || 0;
+        const restoredQty = action === 'increase' ? currentQty - 1 : currentQty + 1;
+        return { ...prev, [productId]: restoredQty };
+      });
+      alert(`Failed to ${action} quantity`);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Handle search input with debounce
   useEffect(() => {
     if (searchQuery.trim()) {
       const timer = setTimeout(() => {
-        searchProducts(searchQuery);
+        const searchProducts = async () => {
+          setLoading(true);
+          try {
+            const response = await fetch('http://localhost:8000/products/search', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'API-KEY': API_KEY,
+              },
+              body: JSON.stringify({ query: searchQuery, limit: 10 }),
+            });
+            if (!response.ok) throw new Error('Search failed');
+            const data: Product[] = await response.json();
+            setProducts(data);
+            setError(null);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Search failed');
+          } finally {
+            setLoading(false);
+          }
+        };
+        searchProducts();
       }, 500);
       return () => clearTimeout(timer);
     } else {
-      // When searchQuery is empty, reuse the cached allProducts
       setProducts(allProducts);
     }
   }, [searchQuery, allProducts]);
@@ -214,12 +300,42 @@ const Products = () => {
                     >
                       {product.quantity > 0 ? 'In Stock' : 'Out of Stock'}
                     </span>
-                    <Link
-                      to={`/products/${product.id}`}
-                      className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
-                    >
-                      View Details
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      {product.quantity > 0 && (
+                        cartItems[product.id] ? (
+                          <div className="flex items-center gap-2 bg-[#8EB03E]/10 rounded-full px-3 py-1">
+                            <button
+                              onClick={() => handleQuantityChange(product.id, 'decrease')}
+                              className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
+                            >
+                              -
+                            </button>
+                            <span className="text-[#8EB03E] font-medium">
+                              {cartItems[product.id]}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(product.id, 'increase')}
+                              className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleAddToCart(product.id, product.price)}
+                            className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                          >
+                            Add to Cart
+                          </button>
+                        )
+                      )}
+                      <Link
+                        to={`/products/${product.id}`}
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                      >
+                        Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>
