@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProductDetails from './components/ProductDetails';
+import CartPage from './components/CartPage';
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/products/:productId" element={<ProductDetails />} />
+          <Route path="/cart" element={<CartPage />} />
         </Routes>
       </AnimatePresence>
       <Footer />
