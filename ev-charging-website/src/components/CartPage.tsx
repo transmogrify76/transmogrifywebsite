@@ -34,7 +34,7 @@ interface Order {
   product_model: string;
   product_details: any;
   quantity_ordered: number;
-  total_amount: number;
+  total_amount: number | string; // Allow both number and string
   payment_option: string;
   order_status: string;
 }
@@ -63,7 +63,8 @@ const CartPage = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const [orders, setOrders] = useState<Order[]>([]);
-  const [showOrders, setShowOrders] = useState(false);
+  const [showOrderHistoryModal, setShowOrderHistoryModal] = useState(false);
+  const [isFetchingOrders, setIsFetchingOrders] = useState(false); // Loading state for order history
 
   // Fetch cart data
   const fetchCartData = async () => {
@@ -105,6 +106,7 @@ const CartPage = () => {
     const userId = getUserIdFromToken();
     if (!userId) return;
 
+    setIsFetchingOrders(true); // Start loading
     try {
       const response = await fetch('http://localhost:8000/order/orderhistory', {
         method: 'POST',
@@ -119,60 +121,60 @@ const CartPage = () => {
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to fetch order history');
+    } finally {
+      setIsFetchingOrders(false); // Stop loading
     }
   };
 
-  
-const handleCheckout = async () => {
-  const userId = getUserIdFromToken();
-  if (!userId) return;
+  // Handle checkout
+  const handleCheckout = async () => {
+    const userId = getUserIdFromToken();
+    if (!userId) return;
 
-  try {
-    // Create orders for each cart item
-    await Promise.all(
-      cartItems.map(async (item) => {
-        const orderData = {
-          user_id: userId.toString(),
-          productid: item.productid.toString(),
-          order_quantity: item.quantity.toString(),
-          totalamount: (item.price * item.quantity).toString(),
-          paymentoption: paymentMethod.toString(),
-          orderstatus: 'Pending',
-        };
+    try {
+      // Create orders for each cart item
+      await Promise.all(
+        cartItems.map(async (item) => {
+          const orderData = {
+            user_id: userId,
+            productid: item.productid,
+            order_quantity: item.quantity,
+            totalamount: item.price * item.quantity,
+            paymentoption: paymentMethod,
+            orderstatus: 'Pending',
+          };
 
-        const response = await fetch('http://localhost:8000/order/addorder', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'API-KEY': API_KEY,
-          },
-          body: JSON.stringify(orderData),
-        });
+          const response = await fetch('http://localhost:8000/order/addorder', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'API-KEY': API_KEY,
+            },
+            body: JSON.stringify(orderData),
+          });
 
-        if (!response.ok) throw new Error('Order creation failed');
-      })
-    );
+          if (!response.ok) throw new Error('Order creation failed');
+        })
+      );
 
-    // Clear cart after successful checkout
-    await fetch('http://localhost:8000/cart/clearcart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'API-KEY': API_KEY,
-      },
-      body: JSON.stringify({ user_id: userId.toString() }),
-    });
+      // Clear cart after successful checkout
+      await fetch('http://localhost:8000/cart/clearcart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'API-KEY': API_KEY,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
 
-    setCartItems([]);
-    setShowCheckout(false);
-    toast.success('Order placed successfully!');
-    await fetchOrderHistory();
-  } catch (error) {
-    console.error('Checkout failed:', error);
-    toast.error('Checkout failed. Please try again.');
-  }
-};
-
+      setCartItems([]);
+      setShowCheckout(false);
+      toast.success('Order placed successfully!');
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      toast.error('Checkout failed. Please try again.');
+    }
+  };
 
   // Handle quantity changes
   const handleQuantityChange = async (productId: string, action: 'increase' | 'decrease') => {
@@ -231,7 +233,6 @@ const handleCheckout = async () => {
 
   useEffect(() => {
     fetchCartData();
-    fetchOrderHistory();
   }, []);
 
   if (loading) {
@@ -270,132 +271,108 @@ const handleCheckout = async () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-[#8EB03E]">Your Shopping Cart</h1>
           <button
-            onClick={() => setShowOrders(!showOrders)}
+            onClick={async () => {
+              setShowOrderHistoryModal(true);
+              await fetchOrderHistory(); // Fetch order history when the button is clicked
+            }}
             className="bg-[#8EB03E] text-white px-4 py-2 rounded-lg"
           >
-            {showOrders ? 'Hide Orders' : 'View Order History'}
+            View Order History
           </button>
         </div>
 
-        {showOrders ? (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-[#8EB03E]">Order History</h2>
-            {orders.length === 0 ? (
-              <p className="text-gray-500">No orders found</p>
-            ) : (
-              orders.map((order) => (
-                <div key={order.order_id} className="bg-white p-4 rounded-lg shadow mb-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-semibold">{order.product_name}</h3>
-                      <p>Quantity: {order.quantity_ordered}</p>
-                      <p>Status: {order.order_status}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">${order.total_amount.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">{order.payment_option}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+        {cartWithProducts.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">
+            Your cart is empty.{" "}
+            <Link to="/products" className="text-[#8EB03E] hover:underline">
+              Browse products
+            </Link>
           </div>
         ) : (
           <>
-            {cartWithProducts.length === 0 ? (
-              <div className="text-center py-20 text-gray-500">
-                Your cart is empty.{" "}
-                <Link to="/products" className="text-[#8EB03E] hover:underline">
-                  Browse products
-                </Link>
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-6 mb-8">
-                  {cartWithProducts.map((item, index) => (
-                    <motion.div
-                      key={item.productid}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row gap-6"
-                    >
-                      <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
-                        {item.product.image_paths?.length > 0 ? (
-                          <img
-                            src={item.product.image_paths[0]}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            No Image
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <h2 className="text-xl font-bold text-[#8EB03E]">{item.product.name}</h2>
-                        <p className="text-gray-600">{item.product.model}</p>
-
-                        <div className="mt-4 flex flex-wrap gap-4 items-center">
-                          <div className="flex items-center gap-2 bg-[#8EB03E]/10 rounded-full px-3 py-1">
-                            <button
-                              onClick={() => handleQuantityChange(item.productid, 'decrease')}
-                              className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
-                            >
-                              -
-                            </button>
-                            <span className="text-[#8EB03E] font-medium">{item.quantity}</span>
-                            <button
-                              onClick={() => handleQuantityChange(item.productid, 'increase')}
-                              className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <div className="flex gap-4">
-                            <p className="text-lg font-semibold">Price: {item.price.toFixed(2)}</p>
-                            <p className="text-lg font-semibold text-[#8EB03E]">
-                              Total: {(item.price * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
+            <div className="grid gap-6 mb-8">
+              {cartWithProducts.map((item, index) => (
                 <motion.div
+                  key={item.productid}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-2xl p-6 shadow-lg"
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row gap-6"
                 >
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-[#8EB03E]">Total Amount</h2>
-                    <p className="text-2xl font-bold">{totalAmount.toFixed(2)}</p>
+                  <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
+                    {item.product.image_paths?.length > 0 ? (
+                      <img
+                        src={item.product.image_paths[0]}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        No Image
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-end gap-4">
-                    <select
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="border p-2 rounded-lg"
-                    >
-                      <option>Credit Card</option>
-                      <option>PayPal</option>
-                      <option>Bank Transfer</option>
-                    </select>
-                    <button
-                      onClick={() => setShowCheckout(true)}
-                      className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-6 py-3 rounded-full text-lg font-medium transition-colors"
-                    >
-                      Proceed to Checkout
-                    </button>
+
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-[#8EB03E]">{item.product.name}</h2>
+                    <p className="text-gray-600">{item.product.model}</p>
+
+                    <div className="mt-4 flex flex-wrap gap-4 items-center">
+                      <div className="flex items-center gap-2 bg-[#8EB03E]/10 rounded-full px-3 py-1">
+                        <button
+                          onClick={() => handleQuantityChange(item.productid, 'decrease')}
+                          className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
+                        >
+                          -
+                        </button>
+                        <span className="text-[#8EB03E] font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => handleQuantityChange(item.productid, 'increase')}
+                          className="text-[#8EB03E] hover:bg-[#8EB03E]/20 rounded-full w-6 h-6 flex items-center justify-center"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <p className="text-lg font-semibold">Price: ${item.price.toFixed(2)}</p>
+                        <p className="text-lg font-semibold text-[#8EB03E]">
+                          Total: ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
-              </>
-            )}
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl p-6 shadow-lg"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-[#8EB03E]">Total Amount</h2>
+                <p className="text-2xl font-bold">${totalAmount.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-end gap-4">
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="border p-2 rounded-lg"
+                >
+                  <option>Credit Card</option>
+                  <option>PayPal</option>
+                  <option>Bank Transfer</option>
+                </select>
+                <button
+                  onClick={() => setShowCheckout(true)}
+                  className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-6 py-3 rounded-full text-lg font-medium transition-colors"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
+            </motion.div>
           </>
         )}
       </div>
@@ -426,6 +403,49 @@ const handleCheckout = async () => {
                 className="px-4 py-2 bg-[#8EB03E] text-white rounded-lg"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order History Modal */}
+      {showOrderHistoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4">Order History</h3>
+            {isFetchingOrders ? (
+              <div className="text-center py-4">
+                <FaSpinner className="animate-spin text-2xl text-[#8EB03E]" />
+              </div>
+            ) : orders.length === 0 ? (
+              <p className="text-gray-500">No orders found</p>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order.order_id} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-semibold">{order.product_name}</h4>
+                        <p>Quantity: {order.quantity_ordered}</p>
+                        <p>Status: {order.order_status}</p>
+                      </div>
+                      <div className="text-right">
+                        {/* Convert total_amount to a number before calling toFixed */}
+                        <p className="font-bold">${Number(order.total_amount).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{order.payment_option}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowOrderHistoryModal(false)}
+                className="px-4 py-2 bg-[#8EB03E] text-white rounded-lg"
+              >
+                Close
               </button>
             </div>
           </div>
