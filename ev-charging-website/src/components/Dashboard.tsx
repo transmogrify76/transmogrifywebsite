@@ -7,6 +7,7 @@ import {
   createAddress,
   getAddresses,
   deleteAddress,
+  setDefaultAddress,  // new API call for setting default
   toggle2FAStatus
 } from '../api';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -26,24 +27,37 @@ interface UserProfile {
   profile_picture: string | null;
 }
 
+// Updated Address interface according to new schema.
 interface Address {
   id: string;
-  street: string;
+  type: 'Home' | 'Work' | 'Other';
+  custom_type_name?: string;
+  house_building: string;
+  locality_street: string;
+  landmark?: string;
   city: string;
+  po_ps: string;
+  district: string;
   state: string;
-  zip_code: string;
-  address_type: 'Home' | 'Work' | 'Other';
-  custom_name?: string;
+  pin: string;
+  country: string;
   is_default: boolean;
 }
 
+// Updated interface for creating an address.
 interface AddressCreate {
-  street: string;
+  type: 'Home' | 'Work' | 'Other';
+  custom_type_name?: string;
+  house_building: string;
+  locality_street: string;
+  landmark?: string;
   city: string;
+  po_ps: string;
+  district: string;
   state: string;
-  zip_code: string;
-  address_type: 'Home' | 'Work' | 'Other';
-  custom_name?: string;
+  pin: string;
+  country: string;
+  is_default?: boolean;
 }
 
 const Dashboard: React.FC = () => {
@@ -61,13 +75,20 @@ const Dashboard: React.FC = () => {
     current_password: '',
     new_password: ''
   });
+  // Updated addressForm state to match new API schema.
   const [addressForm, setAddressForm] = useState<AddressCreate>({
-    street: '',
+    type: 'Home',
+    custom_type_name: '',
+    house_building: '',
+    locality_street: '',
+    landmark: '',
     city: '',
+    po_ps: '',
+    district: '',
     state: '',
-    zip_code: '',
-    address_type: 'Home',
-    custom_name: ''
+    pin: '',
+    country: '',
+    is_default: false,
   });
 
   // Load user profile on initial load.
@@ -92,7 +113,7 @@ const Dashboard: React.FC = () => {
     loadUserProfile();
   }, []);
 
-  // Helper function to fetch addresses only when needed.
+  // Helper function to fetch addresses.
   const fetchAddresses = async () => {
     try {
       const addressesResponse = await getAddresses();
@@ -137,6 +158,8 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
     try {
       const response = await createAddress(addressForm);
+      // Assuming the API returns the new address object,
+      // add it to the current addresses list.
       setAddresses([...addresses, response.data]);
       setShowAddressModal(false);
       toast.success('Address added successfully');
@@ -145,13 +168,31 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteAddress = async (addressId: string) => {
+  const handleDeleteAddress = async (address: Address) => {
     try {
-      await deleteAddress(addressId);
-      setAddresses(addresses.filter(addr => addr.id !== addressId));
+      await deleteAddress(address.type, address.type === 'Other' ? address.custom_type_name : undefined);
+      setAddresses(addresses.filter(addr => addr.id !== address.id));
       toast.success('Address deleted successfully');
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to delete address');
+    }
+  };
+  
+
+  // New function to set an address as default.
+  const handleSetDefaultAddress = async (address: Address) => {
+    try {
+      // For "Other" addresses, we send the custom name along with the type.
+      await setDefaultAddress(address.type, address.type === 'Other' ? address.custom_type_name : undefined);
+      // Optionally, update UI locally (or you could refresh from backend).
+      const updatedAddresses = addresses.map(addr => ({
+        ...addr,
+        is_default: addr.id === address.id,
+      }));
+      setAddresses(updatedAddresses);
+      toast.success('Default address set successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to set default address');
     }
   };
 
@@ -401,16 +442,18 @@ const Dashboard: React.FC = () => {
                         <div>
                           <div className="flex items-center mb-3">
                             <span className={`inline-block w-6 h-6 rounded-full mr-2 
-                              ${address.address_type === 'Home' ? 'bg-pink-500' : 
-                                address.address_type === 'Work' ? 'bg-blue-500' : 'bg-purple-500'}`}
+                              ${address.type === 'Home' ? 'bg-pink-500' : 
+                                address.type === 'Work' ? 'bg-blue-500' : 'bg-purple-500'}`}
                             />
                             <span className="font-semibold text-gray-800">
-                              {address.custom_name || address.address_type}
+                              {address.custom_type_name || address.type}
                             </span>
                           </div>
-                          <p className="text-gray-600 mb-1">{address.street}</p>
+                          <p className="text-gray-600 mb-1">
+                            {address.house_building}, {address.locality_street}
+                          </p>
                           <p className="text-gray-600">
-                            {address.city}, {address.state} {address.zip_code}
+                            {address.city}, {address.state} {address.pin}, {address.country}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -422,15 +465,17 @@ const Dashboard: React.FC = () => {
                           <div className="flex gap-2">
                             <button 
                               className="text-blue-600 hover:text-blue-800 text-sm"
+                              onClick={() => handleSetDefaultAddress(address)}
                             >
                               Set Default
                             </button>
-                            <button 
+                            <button
                               className="text-red-600 hover:text-red-800 text-sm"
-                              onClick={() => handleDeleteAddress(address.id)}
+                              onClick={() => handleDeleteAddress(address)}
                             >
                               Delete
                             </button>
+
                           </div>
                         </div>
                       </div>
@@ -492,10 +537,18 @@ const Dashboard: React.FC = () => {
           <h3 className="text-xl font-semibold mb-4">New Address</h3>
           <form onSubmit={handleAddressSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Street</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">House / Building</label>
               <input
-                value={addressForm.street}
-                onChange={e => setAddressForm({ ...addressForm, street: e.target.value })}
+                value={addressForm.house_building}
+                onChange={e => setAddressForm({ ...addressForm, house_building: e.target.value })}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Locality / Street</label>
+              <input
+                value={addressForm.locality_street}
+                onChange={e => setAddressForm({ ...addressForm, locality_street: e.target.value })}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -517,21 +570,49 @@ const Dashboard: React.FC = () => {
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
-              <input
-                value={addressForm.zip_code}
-                onChange={e => setAddressForm({ ...addressForm, zip_code: e.target.value })}
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
+                <input
+                  value={addressForm.pin}
+                  onChange={e => setAddressForm({ ...addressForm, pin: e.target.value })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                <input
+                  value={addressForm.country}
+                  onChange={e => setAddressForm({ ...addressForm, country: e.target.value })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Post Office / Police Station</label>
+                <input
+                  value={addressForm.po_ps}
+                  onChange={e => setAddressForm({ ...addressForm, po_ps: e.target.value })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                <input
+                  value={addressForm.district}
+                  onChange={e => setAddressForm({ ...addressForm, district: e.target.value })}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Address Type</label>
               <select
-                value={addressForm.address_type}
+                value={addressForm.type}
                 onChange={e => setAddressForm({ 
                   ...addressForm, 
-                  address_type: e.target.value as 'Home' | 'Work' | 'Other' 
+                  type: e.target.value as 'Home' | 'Work' | 'Other' 
                 })}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               >
@@ -540,16 +621,24 @@ const Dashboard: React.FC = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
-            {addressForm.address_type === 'Other' && (
+            {addressForm.type === 'Other' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Custom Name</label>
                 <input
-                  value={addressForm.custom_name}
-                  onChange={e => setAddressForm({ ...addressForm, custom_name: e.target.value })}
+                  value={addressForm.custom_type_name}
+                  onChange={e => setAddressForm({ ...addressForm, custom_type_name: e.target.value })}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
+              <input
+                value={addressForm.landmark}
+                onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <div className="flex justify-end gap-2 mt-6">
               <button
                 type="button"

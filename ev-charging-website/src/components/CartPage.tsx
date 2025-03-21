@@ -24,7 +24,19 @@ interface Product {
 }
 
 interface CartProduct extends CartItem {
-  product: Product; // Explicitly define the product property
+  product: Product;
+}
+
+// Order type from order_history API response
+interface OrderDetails {
+  order_id: string;
+  product_name: string;
+  product_model: string;
+  product_details: string;
+  quantity_ordered: number;
+  total_amount: number;
+  payment_option: string;
+  order_status: string;
 }
 
 const API_KEY = 'mlzuMoRFjdGhcFulLMaVtfwNAHycbBAf';
@@ -46,7 +58,9 @@ const getUserIdFromToken = (): string | null => {
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [orderHistory, setOrderHistory] = useState<OrderDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch cart and product data
@@ -89,11 +103,38 @@ const CartPage = () => {
     }
   };
 
+  // Fetch order history
+  const fetchOrderHistory = async () => {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      alert('Please login to view order history');
+      return;
+    }
+    setOrdersLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/order/orderhistory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'API-KEY': API_KEY,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch order history');
+      const orderData = await response.json();
+      setOrderHistory(orderData);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to load order history');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchCartData();
   }, []);
 
-  // Handle quantity changes
+  // Handle quantity changes in cart (existing logic)
   const handleQuantityChange = async (productId: string, action: 'increase' | 'decrease') => {
     const userId = getUserIdFromToken();
     if (!userId) {
@@ -134,27 +175,64 @@ const CartPage = () => {
     }
   };
 
-  // Combine cart items with product data
+
   const cartWithProducts: CartProduct[] = cartItems
     .map((item) => ({
       ...item,
       product: products.find((p) => p.id === item.productid),
     }))
-    .filter((item): item is CartProduct => !!item.product); // Ensure product exists
+    .filter((item): item is CartProduct => !!item.product);
 
-  // Calculate total amount
+  
   const totalAmount = cartWithProducts.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
+ 
+  const handleCheckout = async () => {
+    const userId = getUserIdFromToken();
+    if (!userId) {
+      alert('Please login to checkout');
+      return;
+    }
+  
+    try {
+    
+      for (const item of cartWithProducts) {
+        const totalAmountString = (item.price * item.quantity).toFixed(2);
+        const orderQuantityString = item.quantity.toString(); 
+        const orderPayload = {
+          user_id: userId,
+          productid: item.productid,
+          order_quantity: orderQuantityString, 
+          totalamount: totalAmountString, 
+          paymentoption: 'COD', 
+          orderstatus: 'Pending',
+        };
+        const response = await fetch('http://localhost:8000/order/addorder', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'API-KEY': API_KEY,
+          },
+          body: JSON.stringify(orderPayload),
+        });
+        if (!response.ok) throw new Error('Failed to create order for one or more items');
+      }
+      alert('Order placed successfully!');
+      fetchCartData();
+    } catch (error) {
+      alert(`Checkout error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+  
+  
+
   if (loading) {
     return (
       <div className="text-center py-20">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5 }}>
           <FaSpinner className="text-4xl text-[#8EB03E] mx-auto" />
         </motion.div>
       </div>
@@ -236,9 +314,9 @@ const CartPage = () => {
                       </div>
 
                       <div className="flex gap-4">
-                        <p className="text-lg font-semibold">Price: ${item.price.toFixed(2)}</p>
+                        <p className="text-lg font-semibold">Price: {item.price.toFixed(2)}</p>
                         <p className="text-lg font-semibold text-[#8EB03E]">
-                          Total: ${(item.price * item.quantity).toFixed(2)}
+                          Total: {(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -254,14 +332,61 @@ const CartPage = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-[#8EB03E]">Total Amount</h2>
-                <p className="text-2xl font-bold">${totalAmount.toFixed(2)}</p>
+                <p className="text-2xl font-bold">{totalAmount.toFixed(2)}</p>
               </div>
-              <div className="flex justify-end">
-                <button className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-6 py-3 rounded-full text-lg font-medium transition-colors">
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleCheckout}
+                  className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-6 py-3 rounded-full text-lg font-medium transition-colors"
+                >
                   Proceed to Checkout
+                </button>
+                <button
+                  onClick={fetchOrderHistory}
+                  className="bg-[#8EB03E] hover:bg-[#7A9C2F] text-white px-6 py-3 rounded-full text-lg font-medium transition-colors"
+                >
+                  View Order History
                 </button>
               </div>
             </motion.div>
+
+            {ordersLoading ? (
+              <div className="text-center py-10">
+                <FaSpinner className="animate-spin text-4xl text-[#8EB03E] mx-auto" />
+              </div>
+            ) : orderHistory.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-8 bg-white rounded-2xl p-6 shadow-lg"
+              >
+                <h2 className="text-2xl font-bold text-[#8EB03E] mb-4">Order History</h2>
+                <div className="space-y-4">
+                  {orderHistory.map((order) => (
+                    <div key={order.order_id} className="border-b pb-4">
+                      <p>
+                        <strong>Order ID:</strong> {order.order_id}
+                      </p>
+                      <p>
+                        <strong>Product:</strong> {order.product_name} ({order.product_model})
+                      </p>
+                      <p>
+                        <strong>Quantity:</strong> {order.quantity_ordered}
+                      </p>
+                      <p>
+                        <strong>Total:</strong> ${order.total_amount.toFixed(2)}
+                      </p>
+                      <p>
+                        <strong>Payment Option:</strong> {order.payment_option}
+                      </p>
+                      <p>
+                        <strong>Status:</strong> {order.order_status}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ) : null}
           </>
         )}
       </div>

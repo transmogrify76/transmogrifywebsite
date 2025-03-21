@@ -22,13 +22,10 @@ interface UserUpdate {
   phone_number?: number | null; // Add phone_number as an optional field
 }
 
-
 interface TwoFARequest {
   email: string;
   otp_code: string;
 }
-
-
 
 interface PasswordResetConfirm {
   email: string;
@@ -36,15 +33,21 @@ interface PasswordResetConfirm {
   otp_code: string;
 }
 
-interface AddressCreate {
-  street: string;
+// Updated AddressCreate interface according to the new schema.
+export interface AddressCreate {
+  type: 'Home' | 'Work' | 'Other';
+  custom_type_name?: string;
+  house_building: string;
+  locality_street: string;
+  landmark?: string;
   city: string;
+  po_ps: string;
+  district: string;
   state: string;
-  zip_code: string;
-  address_type: 'Home' | 'Work' | 'Other';
-  custom_name?: string;
+  pin: string;
+  country: string;
+  is_default?: boolean;
 }
-
 
 // Helper function to set headers with JWT token and API key
 const getAuthHeaders = () => {
@@ -61,9 +64,7 @@ const getAuthHeaders = () => {
 export const signup = async (userData: UserCreate): Promise<AxiosResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/users/signup`, userData, {
-      headers: {
-        'API-Key': API_KEY, // Include the API key for non-authenticated requests
-      },
+      headers: { 'API-Key': API_KEY },
     });
     return response.data;
   } catch (error) {
@@ -74,11 +75,9 @@ export const signup = async (userData: UserCreate): Promise<AxiosResponse> => {
 export const login = async (loginData: LoginData): Promise<AxiosResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/users/login`, loginData, {
-      headers: {
-        'API-Key': API_KEY, // Include the API key for non-authenticated requests
-      },
+      headers: { 'API-Key': API_KEY },
     });
-    localStorage.setItem('token', response.headers['authorization'].split(' ')[1]); // Store JWT token
+    localStorage.setItem('token', response.headers['authorization'].split(' ')[1]);
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -88,7 +87,7 @@ export const login = async (loginData: LoginData): Promise<AxiosResponse> => {
 export const logout = async (): Promise<AxiosResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/users/logout`, {}, getAuthHeaders());
-    localStorage.removeItem('token'); // Remove JWT token
+    localStorage.removeItem('token');
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -117,7 +116,7 @@ export const updateUserProfile = async (updateData: UserUpdate): Promise<AxiosRe
 export const deleteUser = async (): Promise<AxiosResponse> => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/users/delete`, getAuthHeaders());
-    localStorage.removeItem('token'); // Remove JWT token
+    localStorage.removeItem('token');
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -146,11 +145,9 @@ export const toggle2FAStatus = async (requestData: { entered_password: string })
 export const verify2FA = async (twoFAData: TwoFARequest): Promise<AxiosResponse> => {
   try {
     const response = await axios.post(`${API_BASE_URL}/users/2fa/verify`, twoFAData, {
-      headers: {
-        'API-Key': API_KEY, // Include the API key for non-authenticated requests
-      },
+      headers: { 'API-Key': API_KEY },
     });
-    localStorage.setItem('token', response.headers['authorization'].split(' ')[1]); // Store JWT token
+    localStorage.setItem('token', response.headers['authorization'].split(' ')[1]);
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -160,11 +157,11 @@ export const verify2FA = async (twoFAData: TwoFARequest): Promise<AxiosResponse>
 // Password Reset APIs
 export const requestPasswordReset = async (email: string): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/users/password-reset/request`, { email }, {
-      headers: {
-        'API-Key': API_KEY, // Include the API key for non-authenticated requests
-      },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/users/password-reset/request`,
+      { email },
+      { headers: { 'API-Key': API_KEY } }
+    );
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -173,11 +170,11 @@ export const requestPasswordReset = async (email: string): Promise<AxiosResponse
 
 export const resetPassword = async (resetData: PasswordResetConfirm): Promise<AxiosResponse> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/users/password-reset/confirm`, resetData, {
-      headers: {
-        'API-Key': API_KEY, // Include the API key for non-authenticated requests
-      },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/users/password-reset/confirm`,
+      resetData,
+      { headers: { 'API-Key': API_KEY } }
+    );
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
@@ -203,12 +200,36 @@ export const getAddresses = async (): Promise<AxiosResponse> => {
   }
 };
 
-export const deleteAddress = async (addressType: string, customName?: string): Promise<AxiosResponse> => {
+// Updated deleteAddress: Identifies an address by its type and, if applicable, custom name.
+export const deleteAddress = async (
+  addressType: 'Home' | 'Work' | 'Other',
+  customName?: string
+): Promise<AxiosResponse> => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/users/address/${addressType}`, {
       ...getAuthHeaders(),
       params: { custom_name: customName },
     });
+    return response.data;
+  } catch (error) {
+    throw (error as AxiosError).response?.data;
+  }
+};
+
+// New setDefaultAddress function for setting an address as default.
+export const setDefaultAddress = async (
+  addressType: 'Home' | 'Work' | 'Other',
+  customName?: string
+): Promise<AxiosResponse> => {
+  try {
+    const response = await axios.patch(
+      `${API_BASE_URL}/users/address/${addressType}/set-default`,
+      null,
+      {
+        ...getAuthHeaders(),
+        params: { custom_name: customName },
+      }
+    );
     return response.data;
   } catch (error) {
     throw (error as AxiosError).response?.data;
