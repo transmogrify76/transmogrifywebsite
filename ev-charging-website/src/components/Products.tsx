@@ -243,7 +243,7 @@ const Products = () => {
             {products.map((product, index) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 50 }}  
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '0px 0px -100px 0px' }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -274,7 +274,7 @@ const Products = () => {
                   <h3 className="text-xl font-bold mb-2 text-[#8EB03E]">{product.name}</h3>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-gray-600">{product.model}</span>
-                    <span className="text-lg font-semibold text-[#8EB03E]">${product.price}</span>
+                    <span className="text-lg font-semibold text-[#8EB03E]">{product.price}</span>
                   </div>
                   <div className="text-gray-600 text-sm mb-4">
                     <p>
