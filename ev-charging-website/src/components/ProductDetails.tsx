@@ -29,7 +29,7 @@ interface Product {
     minimum_operating_temperature: number;
   };
   is_listed: boolean;
-  image_paths: string[];
+  image_paths: string[] | null;  // Make sure image_paths can be null
   quantity: number;
   price: number;
 }
@@ -124,7 +124,7 @@ const ProductDetails = () => {
                 <span className="text-gray-500">No Image Available</span>
               </div>
             )}
-            {product.image_paths && product.image_paths.length > 1 && (
+            {Array.isArray(product.image_paths) && product.image_paths.length > 1 ? (
               <div className="mt-4 flex space-x-2 overflow-x-auto">
                 {product.image_paths.map((path, index) => (
                   <motion.img
@@ -137,6 +137,10 @@ const ProductDetails = () => {
                     transition={{ duration: 0.2 }}
                   />
                 ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-full h-20 bg-gray-100 rounded-lg">
+                <span className="text-gray-500">No additional images available</span>
               </div>
             )}
           </div>
