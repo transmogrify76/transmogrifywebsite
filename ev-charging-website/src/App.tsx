@@ -16,7 +16,7 @@ import CartPage from './components/CartPage';
 const App = () => {
   return (
     <Router>
-      <Navbar />
+      {/* <Navbar /> */}
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -31,7 +31,7 @@ const App = () => {
           <Route path="/cart" element={<CartPage />} />
         </Routes>
       </AnimatePresence>
-      <Footer />
+      {/* <Footer /> */}
     </Router>
   );
 };
