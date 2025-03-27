@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { FaArrowRight, FaArrowLeft, FaArrowUp } from 'react-icons/fa';
 
+
 const Home: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
@@ -233,7 +234,7 @@ const Home: React.FC = () => {
           </div>
 
           <div className="mt-16">
-            <p className="text-left text-gray-600 mb-12 text-[28px] font-aeonik-regular">
+            <p className="text-left text-black-600 mb-12 text-[20px] font-aeonik-regular">
               Charging solutions for
             </p>
             {[
@@ -248,12 +249,12 @@ const Home: React.FC = () => {
               >
                 <div className="absolute inset-0 bg-[#8EB03E] transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-300 ease-out" />
                 <div className="relative z-10 col-span-1 text-left">
-                  <span className="text-[48px] font-aeonik-medium text-black group-hover:text-white">
+                  <span className="text-[68px] font-aeonik-medium text-black group-hover:text-white">
                     {item.number}
                   </span>
                 </div>
                 <div className="relative z-10 col-span-1 flex justify-center">
-                  <span className="text-[40px] font-aeonik-medium text-black group-hover:text-white text-center">
+                  <span className="text-[60px] font-aeonik-medium text-black group-hover:text-white text-center">
                     {item.title}
                   </span>
                 </div>
@@ -269,8 +270,8 @@ const Home: React.FC = () => {
       {/* How We Can Help Section */}
       <section className="py-24 px-8 md:px-16 lg:px-24 bg-white">
   <div className="flex flex-col lg:flex-row">
-    {/* Image on the left - with right padding */}
-    <div className="lg:w-1/2 h-[700px] relative order-1 lg:order-1 lg:-ml-8 lg:pr-16"> {/* Added lg:pr-16 for right padding */}
+    {/* Image on the left */}
+    <div className="lg:w-1/2 h-[700px] relative order-1 lg:order-1 lg:-ml-8 lg:pr-16">
       <AnimatePresence mode="wait">
         <motion.img
           key={activeHelpTab}
@@ -285,10 +286,10 @@ const Home: React.FC = () => {
       </AnimatePresence>
     </div>
 
-    {/* Text content on the right - only heading aligned with image top */}
+    {/* Text content on the right */}
     <div className="lg:w-1/2 p-8 md:p-16 flex flex-col order-2 lg:order-2">
       <div className="lg:relative">
-        <h2 className="text-1xl md:text-2xl mb-12 font-aeonik-medium lg:absolute lg:-top-16">How we can help</h2>
+        <h2 className="text-xl md:text-2xl mb-12 font-aeonik-medium lg:absolute lg:-top-16">How we can help</h2>
       </div>
       
       <div className="flex-1 lg:mt-24">
@@ -296,17 +297,16 @@ const Home: React.FC = () => {
           <motion.div
             key={index}
             onHoverStart={() => setActiveHelpTab(index)}
-            className="relative pb-8 mb-8 cursor-pointer"
+            className="relative pb-8 mb-8 cursor-pointer group"
           >
-            <h3 className="text-4xl md:text-5xl lg:text-6xl font-aeonik-medium mb-4">
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-aeonik-medium mb-4 relative inline-block">
               {tab.title}
+              <motion.span
+                className="absolute bottom-0 left-0 w-0 h-[2px] bg-black group-hover:w-full transition-all duration-300"
+                initial={{ width: 0 }}
+                whileHover={{ width: "100%" }}
+              />
             </h3>
-            <motion.div
-              className="absolute bottom-0 left-0 h-1 bg-black origin-left"
-              initial={{ scaleX: 0 }}
-              whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.3 }}
-            />
           </motion.div>
         ))}
       </div>

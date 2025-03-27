@@ -14,7 +14,7 @@
     "@tailwindcss/vite": "^4.0.10",
     "axios": "^1.8.2",
     "date-fns": "^4.1.0",
-    "framer-motion": "^12.4.10",
+    "framer-motion": "^12.6.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
